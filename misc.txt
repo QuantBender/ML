@@ -1,0 +1,40 @@
+def plot_classifier_grid_search_results(classifier, X, y, param_grid, model_name, param_name, ax):
+    """ Plot the results of a grid search for a classifier.
+
+    Given a grid search on a classifier, a dataset and the name of the model, this function should generate a 2D plot
+    of the mean test score for each pair of parameters. It should also mark the best parameter combination and its score.
+
+    Args:
+    classifier: An instance of a scikit-learn classifier (e.g. sklearn.svm.SVC).
+    X: The dataset features.
+    y: The dataset labels.
+    param_grid: The parameter grid to be searched.
+    model_name: The name of the model (string).
+    param_name: The name of the parameter being evaluated (string).
+    ax: The matplotlib axis object to draw on.
+    """
+    
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    
+    grid_search_model = GridSearchCV(classifier, param_grid, cv=skf, n_jobs=-1, return_train_score=True)
+    
+    grid_res = grid_search_model.fit(X, y)
+    
+    results = pd.DataFrame(grid_res.cv_results_)
+    
+    # plot train and test scores
+    ax.plot(results[param_name], results['mean_train_score'], label='mean train score', color='blue')
+    ax.plot(results[param_name], results['mean_test_score'], label='mean test score', color='red')
+    
+    ax.fill_between(results[param_name], results['mean_train_score'] + results['std_train_score'], results['mean_train_score'] - results['std_train_score'], alpha=0.3, color='blue')
+    
+    ax.fill_between(results[param_name], results['mean_test_score'] + results['std_test_score'], results['mean_test_score'] - results['std_test_score'], alpha=0.3, color='red')
+    
+    ax.set_title(f'{model_name} Train and Test Scores')
+    ax.set_xlabel(param_name)
+    ax.set_ylabel('Score')
+    
+    ax.legend()
+    
+    return results
+    # plt.show()
